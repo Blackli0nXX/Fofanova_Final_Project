@@ -1,3 +1,4 @@
+import javafx.application.Platform;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 
@@ -21,6 +22,13 @@ public class RecordSelector {
         selectActionPane.setCollapsible( false );
         contactRecordsPane.setCollapsible( false );
 
+        newBtn.setOnAction( actionEvent -> {
+            new ContactRecord();
+        });
+
+        exitBtn.setOnAction( actionEvent -> {
+            Platform.exit();
+        });
     }
 
     public VBox getRoot(){ return root; }
