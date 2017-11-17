@@ -12,15 +12,12 @@ public class Contact {
     private String notes;
 
     public void setFirstName(String firstName) { this.firstName = firstName; }
-
     public void setLastName(String lastName) { this.lastName = lastName; }
-
     public void setEmail(String email) throws InvalidEmailException{
         if( Pattern.compile("\\S+@\\S+\\.\\S+").matcher( email ).matches() )
             this.email = email;
         else throw new InvalidEmailException();
     }
-
     public void setPhoneNumber(String phoneNumber) throws InvalidPhoneNumberException{
         if( Pattern.compile("\\d{4,}").matcher( phoneNumber ).matches() )
             this.phoneNumber = phoneNumber;
@@ -28,6 +25,8 @@ public class Contact {
     }
 
     public void setAddress(String address) { this.address = address; }
+    public void setBirthday(String birthday) { this.birthday = birthday; }
+    public void setNotes(String notes) { this.notes = notes; }
 }
 
 class InvalidEmailException extends IOException{
