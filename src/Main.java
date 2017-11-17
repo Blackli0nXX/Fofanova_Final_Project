@@ -14,8 +14,6 @@ public class Main extends Application {
 
         VBox root = new VBox();
 
-        Contact person = new Contact();
-
         primaryStage.setTitle("Hello World");
         primaryStage.setScene(new Scene(root, 300, 275));
         primaryStage.show();
@@ -25,10 +23,4 @@ public class Main extends Application {
         launch(args);
     }
 
-    private Button newBtn = new Button("New");
-    private Button viewBtn = new Button("View");
-    private Button deleteBtn = new Button("Delete");
-    private Button editBtn = new Button("Edit");
-    private Button exitBtn = new Button("Exit");
-    private HBox selectAction = new HBox( newBtn, viewBtn, deleteBtn, editBtn, exitBtn );
 }
