@@ -55,8 +55,14 @@ public class ContactRecord {
         root.setPadding(new Insets(10));
         root.setAlignment(Pos.CENTER);
 
+        Scene scene = new Scene( root, 250, 150);
+        Stage stage = new Stage();
+        stage.setTitle("Contact Information");
+        stage.setScene(scene);
+        stage.show();
+
         cancelBtn.setOnAction( actionEvent -> {
-            Platform.exit();
+            stage.close();
         });
 
         saveBtn.setOnAction( actionEvent -> {
@@ -64,17 +70,17 @@ public class ContactRecord {
 
                 try {
                     Connection conn = RecordSelector.openDB();
-                    conn.createStatement().executeQuery("");
+                    conn.createStatement().executeUpdate("INSERT INTO contacts (firstName, lastName, email, phoneNumber, address, birthday, notes) VALUES (\'" +
+                            firstNameTxt.getText() + "\', \'" + lastNameTxt.getText() + "\', \'" + emailTxt.getText() + "\', \'" + phoneNumberTxt.getText() + "\', \'" +
+                            addressTxt.getText() + "\', \'" + birthdayTxt.getText() + "\', \'" + notesTxt.getText() + "\');" );
+
+                    conn.close();
+
+                    stage.close();
                 }
                 catch( Exception ex ){ ex.printStackTrace(); }
 
             }
         });
-
-        Scene scene = new Scene( root, 250, 150);
-        Stage stage = new Stage();
-        stage.setTitle("Contact Information");
-        stage.setScene(scene);
-        stage.show();
     }
 }
