@@ -12,6 +12,10 @@ public class Contact{
     private SimpleStringProperty birthday;
     private SimpleStringProperty notes;
 
+    Contact(){
+
+    }
+
     Contact( String firstName, String lastName, String email, String phoneNumber, String address, String birthday, String notes ){
         this.firstName = new SimpleStringProperty( firstName );
         this.lastName = new SimpleStringProperty( lastName );

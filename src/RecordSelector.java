@@ -26,17 +26,8 @@ public class RecordSelector {
         selectActionPane.setCollapsible( false );
         contactRecordsPane.setCollapsible( false );
 
-        newBtn.setOnAction( actionEvent -> {
-            new ContactRecord();
-        });
-
-        exitBtn.setOnAction( actionEvent -> {
-            Platform.exit();
-        });
-
         try{
-            Class.forName("com.mysql.jdbc.Driver").newInstance();
-            Connection conn = DriverManager.getConnection("jdbc:mysql://tstouchet17f.heyuhnem.com:3306/tstouche_contacts", "tstouche_contact", "OhMF?cJO!@}1");
+            Connection conn = openDB();
 
             ObservableList<String> currentEntries = FXCollections.observableArrayList();
             ResultSet result = conn.createStatement().executeQuery( "SELECT * FROM contacts" );
@@ -48,12 +39,30 @@ public class RecordSelector {
             contactRecords.setItems( currentEntries );
 
             conn.close();
-
         }
-        catch( Exception ex ){
-            ex.printStackTrace();
-        }
+        catch( Exception ex ){ ex.printStackTrace(); }
 
+        newBtn.setOnAction( actionEvent -> {
+            new ContactRecord( ContactRecord.Option.NEW, new Contact() );
+        });
+
+        exitBtn.setOnAction( actionEvent -> {
+            Platform.exit();
+        });
+
+    }
+
+    public static Connection openDB(){
+
+        Connection conn = null;
+
+        try{
+            Class.forName("com.mysql.jdbc.Driver").newInstance();
+            conn = DriverManager.getConnection("jdbc:mysql://tstouchet17f.heyuhnem.com:3306/tstouche_contacts", "tstouche_contact", "OhMF?cJO!@}1");
+        }
+        catch( Exception ex ){ ex.printStackTrace(); }
+
+        return conn;
     }
 
     public VBox getRoot(){ return root; }
