@@ -60,7 +60,6 @@ public class Contact{
 }
 
 class InvalidEmailException extends IOException{
-
     public InvalidEmailException(){
         super("Error: email must  contain one \'@\' and one \'.\'");
     }

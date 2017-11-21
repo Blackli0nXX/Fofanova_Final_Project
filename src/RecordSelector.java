@@ -38,40 +38,23 @@ public class RecordSelector {
             Class.forName("com.mysql.jdbc.Driver").newInstance();
             Connection conn = DriverManager.getConnection("jdbc:mysql://tstouchet17f.heyuhnem.com:3306/tstouche_contacts", "tstouche_contact", "OhMF?cJO!@}1");
 
+            ObservableList<String> currentEntries = FXCollections.observableArrayList();
+            ResultSet result = conn.createStatement().executeQuery( "SELECT * FROM contacts" );
+
+            while( result.next() ){
+                currentEntries.add( String.valueOf( result.getString("firstName") + " " + result.getString("lastName") ) );
+            }
+
+            contactRecords.setItems( currentEntries );
+
+            conn.close();
 
         }
         catch( Exception ex ){
             ex.printStackTrace();
         }
 
-        /*
-        ObservableList<Contact> data = FXCollections.observableArrayList();
-
-        try {
-            Connection conn = DriverManager.getConnection(DB_URL);
-            Statement stmt = conn.createStatement();
-
-            String sqlStatement = "SELECT Description, ProdNum, Price FROM Coffee";
-
-            ResultSet result = stmt.executeQuery(sqlStatement);
-
-            while (result.next()) {
-
-                System.out.println( result.getString("Description") );
-
-                data.add( new Contact( result.getString("Description"),
-                        result.getString("ProdNum"),
-                        result.getString("Price")) );
-            }
-            conn.close();
-        }
-        catch (Exception ex) {
-            System.out.println("ERROR: " + ex.getMessage());
-        }
-        */
-
     }
 
     public VBox getRoot(){ return root; }
-
 }
