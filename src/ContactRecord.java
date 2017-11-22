@@ -51,10 +51,10 @@ public class ContactRecord {
 
     ContactRecord( Option option, int primaryKey, RecordSelector parent ){
 
-        root.setPadding(new Insets(10));
+        root.setPadding(new Insets(10, 50, 50, 50));
         root.setAlignment(Pos.CENTER);
 
-        Scene scene = new Scene( root, 250, 150);
+        Scene scene = new Scene( root, 625, 625);
         Stage stage = new Stage();
         stage.setTitle("Contact Information");
         stage.setScene(scene);

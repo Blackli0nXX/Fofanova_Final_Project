@@ -1,5 +1,6 @@
 import javafx.application.Platform;
 import javafx.collections.*;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -33,6 +34,8 @@ public class RecordSelector {
 
     RecordSelector(){
 
+        root.setAlignment( Pos.CENTER );
+
         selectActionPane.setCollapsible( false );
         contactRecordsPane.setCollapsible( false );
 
@@ -47,6 +50,7 @@ public class RecordSelector {
 
         setButtonActions();
         setButtonIcons();
+        setButtonTooltips();
     }
 
     /**
@@ -191,7 +195,7 @@ public class RecordSelector {
     }
 
     /**
-     * Sets the Icons for all buttons
+     * Sets the Icons for all Buttons
      */
     private void setButtonIcons(){
         newBtn.setGraphic( new ImageView( new Image( getClass().getResourceAsStream("png/new.png"))));
@@ -201,6 +205,19 @@ public class RecordSelector {
         importBtn.setGraphic( new ImageView( new Image( getClass().getResourceAsStream("png/import.png"))));
         exportBtn.setGraphic( new ImageView( new Image( getClass().getResourceAsStream("png/export.png"))));
         exitBtn.setGraphic( new ImageView( new Image( getClass().getResourceAsStream("png/exit.png"))));
+    }
+
+    /**
+     * Sets Tooltips for all Buttons
+     */
+    private void setButtonTooltips(){
+        newBtn.setTooltip( new Tooltip("Opens a form to add a new contact"));
+        viewBtn.setTooltip( new Tooltip("Prints the contents of the selected contact"));
+        deleteBtn.setTooltip( new Tooltip("Deletes selected contact from the database"));
+        editBtn.setTooltip( new Tooltip("Opens a form to edit the contents of the selected contact"));
+        importBtn.setTooltip( new Tooltip("Opens a window to select a CSV file to import into the database"));
+        exportBtn.setTooltip( new Tooltip("Opens a window to select a file to export the contents of the database to"));
+        exitBtn.setTooltip( new Tooltip("Exits the application"));
     }
 
     /**

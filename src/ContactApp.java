@@ -27,7 +27,7 @@ public class ContactApp extends Application {
     public void start(Stage primaryStage) throws Exception{
 
         primaryStage.setTitle("Instructor's Record");
-        primaryStage.setScene(new Scene( new RecordSelector().getRoot(), 300, 275 ) );
+        primaryStage.setScene(new Scene( new RecordSelector().getRoot(), 625, 625 ) );
         primaryStage.show();
     }
 
