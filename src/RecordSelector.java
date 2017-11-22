@@ -1,6 +1,8 @@
 import javafx.application.Platform;
 import javafx.collections.*;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.stage.*;
 import java.io.File;
@@ -42,6 +44,28 @@ public class RecordSelector {
         updateContactRecords();
 
         setButtonActions();
+        setButtonIcons();
+    }
+
+    /**
+     * This function refreshes the contactRecords ListView with items from the database
+     */
+    public void updateContactRecords(){
+        try{
+            Connection conn = ContactApp.openDB();
+
+            ObservableList<String> currentEntries = FXCollections.observableArrayList();
+            ResultSet result = conn.createStatement().executeQuery( "SELECT * FROM contacts" );
+
+            while( result.next() ){
+                currentEntries.add( String.valueOf( result.getString("firstName") + " " + result.getString("lastName") ) );
+            }
+
+            contactRecords.setItems( currentEntries );
+
+            conn.close();
+
+        } catch( Exception ex ){ ex.printStackTrace(); }
     }
 
     /**
@@ -153,24 +177,16 @@ public class RecordSelector {
     }
 
     /**
-     * This function refreshes the contactRecords ListView with items from the database
+     * Sets the Icons for all buttons
      */
-    public void updateContactRecords(){
-        try{
-            Connection conn = ContactApp.openDB();
-
-            ObservableList<String> currentEntries = FXCollections.observableArrayList();
-            ResultSet result = conn.createStatement().executeQuery( "SELECT * FROM contacts" );
-
-            while( result.next() ){
-                currentEntries.add( String.valueOf( result.getString("firstName") + " " + result.getString("lastName") ) );
-            }
-
-            contactRecords.setItems( currentEntries );
-
-            conn.close();
-
-        } catch( Exception ex ){ ex.printStackTrace(); }
+    private void setButtonIcons(){
+        newBtn.setGraphic( new ImageView( new Image( getClass().getResourceAsStream("png/new.png"))));
+        viewBtn.setGraphic( new ImageView( new Image( getClass().getResourceAsStream("png/view.png"))));
+        deleteBtn.setGraphic( new ImageView( new Image( getClass().getResourceAsStream("png/delete.png"))));
+        editBtn.setGraphic( new ImageView( new Image( getClass().getResourceAsStream("png/edit.png"))));
+        importBtn.setGraphic( new ImageView( new Image( getClass().getResourceAsStream("png/import.png"))));
+        exportBtn.setGraphic( new ImageView( new Image( getClass().getResourceAsStream("png/export.png"))));
+        exitBtn.setGraphic( new ImageView( new Image( getClass().getResourceAsStream("png/exit.png"))));
     }
 
     /**
