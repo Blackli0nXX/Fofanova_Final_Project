@@ -102,6 +102,7 @@ public class ContactRecord {
                     conn.createStatement().executeUpdate( query );
 
                     conn.close();
+                    stage.close();
 
                 } catch( Exception ex ){ ex.printStackTrace(); }
             }
@@ -114,7 +115,6 @@ public class ContactRecord {
                             addressTxt.getText() + "\', \'" + birthdayTxt.getText() + "\', \'" + notesTxt.getText() + "\');" );
 
                     conn.close();
-
                     stage.close();
                 }
                 catch( Exception ex ){ ex.printStackTrace(); }

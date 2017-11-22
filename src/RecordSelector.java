@@ -1,10 +1,13 @@
 import javafx.application.Platform;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import javafx.collections.*;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 
+import java.io.File;
 import java.sql.*;
+import java.util.Scanner;
 
 public class RecordSelector {
 
@@ -15,8 +18,9 @@ public class RecordSelector {
     private Button viewBtn = new Button("View");
     private Button deleteBtn = new Button("Delete");
     private Button editBtn = new Button("Edit");
+    private Button importBtn = new Button("Import");
     private Button exitBtn = new Button("Exit");
-    private HBox selectAction = new HBox( newBtn, viewBtn, deleteBtn, editBtn, exitBtn );
+    private HBox selectAction = new HBox( newBtn, viewBtn, deleteBtn, editBtn, importBtn, exitBtn );
     private TitledPane selectActionPane = new TitledPane("Select an Action", selectAction);
 
     VBox root = new VBox( contactRecordsPane, selectActionPane );
@@ -28,21 +32,7 @@ public class RecordSelector {
         selectActionPane.setCollapsible( false );
         contactRecordsPane.setCollapsible( false );
 
-        try{
-            Connection conn = ContactApp.openDB();
-
-            ObservableList<String> currentEntries = FXCollections.observableArrayList();
-            ResultSet result = conn.createStatement().executeQuery( "SELECT * FROM contacts" );
-
-            while( result.next() ){
-                currentEntries.add( String.valueOf( result.getString("firstName") + " " + result.getString("lastName") ) );
-            }
-
-            contactRecords.setItems( currentEntries );
-
-            conn.close();
-
-        } catch( Exception ex ){ ex.printStackTrace(); }
+        updateContactRecords();
 
         contactRecords.setOnMouseClicked( actionEvent -> {
             if( contactRecords.getSelectionModel().isEmpty() == false ){
@@ -62,12 +52,35 @@ public class RecordSelector {
 
             } catch( Exception ex ){ ex.printStackTrace(); }
 
+            updateContactRecords();
         });
 
         editBtn.setOnAction( actionEvent -> new ContactRecord( ContactRecord.Option.WRITE, getSelectedPK() ) );
 
-        exitBtn.setOnAction( actionEvent -> Platform.exit());
+        importBtn.setOnAction( actionEvent -> {
+            try {
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setTitle("CSV Selector");
+                File csvFile = fileChooser.showOpenDialog(new Stage());
 
+                Scanner csvScanner = new Scanner( csvFile );
+                csvScanner.useDelimiter("(,|\n)");
+
+                while( csvScanner.hasNext() ){
+                    Connection conn = ContactApp.openDB();
+                    String query = "INSERT INTO contacts (firstName, lastName, email, phoneNumber, address, birthday, notes) VALUES (\'" +
+                            csvScanner.next() + "\', \'" + csvScanner.next() + "\', \'" + csvScanner.next() + "\', \'" + csvScanner.next() + "\', \'" +
+                            csvScanner.next() + "\', \'" + csvScanner.next() + "\', \'" + csvScanner.next() + "\');";
+                    debug( query );
+                    conn.createStatement().executeUpdate( query );
+                    conn.close();
+                }
+            } catch( Exception ex ){ ex.printStackTrace(); }
+
+            updateContactRecords();
+        });
+
+        exitBtn.setOnAction( actionEvent -> Platform.exit());
     }
 
     /**
@@ -114,11 +127,29 @@ public class RecordSelector {
         editBtn.setDisable( option );
     }
 
-    public VBox getRoot(){ return root; }
+    public void updateContactRecords(){
+        try{
+            Connection conn = ContactApp.openDB();
+
+            ObservableList<String> currentEntries = FXCollections.observableArrayList();
+            ResultSet result = conn.createStatement().executeQuery( "SELECT * FROM contacts" );
+
+            while( result.next() ){
+                currentEntries.add( String.valueOf( result.getString("firstName") + " " + result.getString("lastName") ) );
+            }
+
+            contactRecords.setItems( currentEntries );
+
+            conn.close();
+
+        } catch( Exception ex ){ ex.printStackTrace(); }
+    }
 
     /**
      * shortcut for System.out.println()
      * @param message String that will be printed to console
      */
     private void debug( String message ){ System.out.println( message ); }
+
+    public VBox getRoot(){ return root; }
 }
