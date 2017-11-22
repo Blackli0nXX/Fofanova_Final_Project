@@ -3,7 +3,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
-
 import java.sql.Connection;
 import java.sql.ResultSet;
 
@@ -50,7 +49,7 @@ public class ContactRecord {
         NEW
     }
 
-    ContactRecord( Option option, int primaryKey ){
+    ContactRecord( Option option, int primaryKey, RecordSelector parent ){
 
         root.setPadding(new Insets(10));
         root.setAlignment(Pos.CENTER);
@@ -119,6 +118,7 @@ public class ContactRecord {
                 }
                 catch( Exception ex ){ ex.printStackTrace(); }
             }
+            parent.updateContactRecords();
         });
     }
 

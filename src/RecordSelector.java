@@ -2,9 +2,7 @@ import javafx.application.Platform;
 import javafx.collections.*;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.stage.FileChooser;
-import javafx.stage.Stage;
-
+import javafx.stage.*;
 import java.io.File;
 import java.sql.*;
 import java.util.Scanner;
@@ -19,68 +17,28 @@ public class RecordSelector {
     private Button deleteBtn = new Button("Delete");
     private Button editBtn = new Button("Edit");
     private Button importBtn = new Button("Import");
+    private Button exportBtn = new Button("Export");
     private Button exitBtn = new Button("Exit");
-    private HBox selectAction = new HBox( newBtn, viewBtn, deleteBtn, editBtn, importBtn, exitBtn );
+    private HBox selectAction = new HBox( newBtn, viewBtn, deleteBtn, editBtn, importBtn, exportBtn, exitBtn );
     private TitledPane selectActionPane = new TitledPane("Select an Action", selectAction);
 
     VBox root = new VBox( contactRecordsPane, selectActionPane );
 
     RecordSelector(){
 
-        disableButtons( true );
-
         selectActionPane.setCollapsible( false );
         contactRecordsPane.setCollapsible( false );
 
-        updateContactRecords();
-
+        disableButtons( true );
         contactRecords.setOnMouseClicked( actionEvent -> {
-            if( contactRecords.getSelectionModel().isEmpty() == false ){
+            if( !contactRecords.getSelectionModel().isEmpty() ){
                 disableButtons( false );
             }
         });
 
-        newBtn.setOnAction( actionEvent -> new ContactRecord( ContactRecord.Option.NEW, 0 ));
+        updateContactRecords();
 
-        viewBtn.setOnAction( actionEvent ->  new ContactRecord( ContactRecord.Option.READ, getSelectedPK() ) );
-
-        deleteBtn.setOnAction( actionEvent -> {
-            try{
-                Connection conn = ContactApp.openDB();
-                conn.createStatement().executeUpdate( "DELETE FROM contacts WHERE userID=\'" + getSelectedPK() + "\';" );
-                conn.close();
-
-            } catch( Exception ex ){ ex.printStackTrace(); }
-
-            updateContactRecords();
-        });
-
-        editBtn.setOnAction( actionEvent -> new ContactRecord( ContactRecord.Option.WRITE, getSelectedPK() ) );
-
-        importBtn.setOnAction( actionEvent -> {
-            try {
-                FileChooser fileChooser = new FileChooser();
-                fileChooser.setTitle("CSV Selector");
-                File csvFile = fileChooser.showOpenDialog(new Stage());
-
-                Scanner csvScanner = new Scanner( csvFile );
-                csvScanner.useDelimiter("(,|\n)");
-
-                while( csvScanner.hasNext() ){
-                    Connection conn = ContactApp.openDB();
-                    String query = "INSERT INTO contacts (firstName, lastName, email, phoneNumber, address, birthday, notes) VALUES (\'" +
-                            csvScanner.next() + "\', \'" + csvScanner.next() + "\', \'" + csvScanner.next() + "\', \'" + csvScanner.next() + "\', \'" +
-                            csvScanner.next() + "\', \'" + csvScanner.next() + "\', \'" + csvScanner.next() + "\');";
-                    debug( query );
-                    conn.createStatement().executeUpdate( query );
-                    conn.close();
-                }
-            } catch( Exception ex ){ ex.printStackTrace(); }
-
-            updateContactRecords();
-        });
-
-        exitBtn.setOnAction( actionEvent -> Platform.exit());
+        setButtonActions();
     }
 
     /**
@@ -117,16 +75,56 @@ public class RecordSelector {
     }
 
     /**
-     * Disables or enables the buttons that should not be enabled when there is no item selected in the contactRecords
-     * list
-     * @param option true to disable, false to enable
+     * This function initializes the logic for all of the buttons
      */
-    private void disableButtons( boolean option ){
-        viewBtn.setDisable( option );
-        deleteBtn.setDisable( option );
-        editBtn.setDisable( option );
+    private void setButtonActions(){
+
+        newBtn.setOnAction( actionEvent -> new ContactRecord( ContactRecord.Option.NEW, 0, this ));
+
+        viewBtn.setOnAction( actionEvent ->  new ContactRecord( ContactRecord.Option.READ, getSelectedPK(), this ) );
+
+        deleteBtn.setOnAction( actionEvent -> {
+            try{
+                Connection conn = ContactApp.openDB();
+                conn.createStatement().executeUpdate( "DELETE FROM contacts WHERE userID=\'" + getSelectedPK() + "\';" );
+                conn.close();
+
+            } catch( Exception ex ){ ex.printStackTrace(); }
+
+            updateContactRecords();
+        });
+
+        editBtn.setOnAction( actionEvent -> new ContactRecord( ContactRecord.Option.WRITE, getSelectedPK(), this ) );
+
+        importBtn.setOnAction( actionEvent -> {
+            try {
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setTitle("CSV Selector");
+                File csvFile = fileChooser.showOpenDialog(new Stage());
+
+                Scanner csvScanner = new Scanner( csvFile );
+                csvScanner.useDelimiter("(,|\n)");
+
+                while( csvScanner.hasNext() ){
+                    Connection conn = ContactApp.openDB();
+                    String query = "INSERT INTO contacts (firstName, lastName, email, phoneNumber, address, birthday, notes) VALUES (\'" +
+                            csvScanner.next() + "\', \'" + csvScanner.next() + "\', \'" + csvScanner.next() + "\', \'" + csvScanner.next() + "\', \'" +
+                            csvScanner.next() + "\', \'" + csvScanner.next() + "\', \'" + csvScanner.next() + "\');";
+                    debug( query );
+                    conn.createStatement().executeUpdate( query );
+                    conn.close();
+                }
+            } catch( Exception ex ){ ex.printStackTrace(); }
+
+            updateContactRecords();
+        });
+
+        exitBtn.setOnAction( actionEvent -> Platform.exit());
     }
 
+    /**
+     * This function refreshes the contactRecords ListView with items from the database
+     */
     public void updateContactRecords(){
         try{
             Connection conn = ContactApp.openDB();
@@ -146,10 +144,25 @@ public class RecordSelector {
     }
 
     /**
-     * shortcut for System.out.println()
+     * Disables or enables the buttons that should not be enabled when there is no item selected in the contactRecords
+     * list
+     * @param option true to disable, false to enable
+     */
+    private void disableButtons( boolean option ){
+        viewBtn.setDisable( option );
+        deleteBtn.setDisable( option );
+        editBtn.setDisable( option );
+    }
+
+    /**
+     * This method is a shortcut for System.out.println(), and is used to quickly create debug messages
      * @param message String that will be printed to console
      */
     private void debug( String message ){ System.out.println( message ); }
 
+    /**
+     * This method is called by the main application to get the root VBox object
+     * @return Returns the root VBox object
+     */
     public VBox getRoot(){ return root; }
 }
