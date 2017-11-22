@@ -50,16 +50,31 @@ public class RecordSelector {
             }
         });
 
-        editBtn.setOnAction( actionEvent -> {
-            new ContactRecord( ContactRecord.Option.WRITE, getSelectedPK() );
+        newBtn.setOnAction( actionEvent -> new ContactRecord( ContactRecord.Option.NEW, 0 ));
+
+        viewBtn.setOnAction( actionEvent ->  new ContactRecord( ContactRecord.Option.READ, getSelectedPK() ) );
+
+        deleteBtn.setOnAction( actionEvent -> {
+            try{
+                Connection conn = ContactApp.openDB();
+                conn.createStatement().executeUpdate( "DELETE FROM contacts WHERE userID=\'" + getSelectedPK() + "\';" );
+                conn.close();
+                
+            } catch( Exception ex ){ ex.printStackTrace(); }
+
         });
 
-        newBtn.setOnAction( actionEvent -> new ContactRecord( ContactRecord.Option.NEW, 0 ));
+        editBtn.setOnAction( actionEvent -> new ContactRecord( ContactRecord.Option.WRITE, getSelectedPK() ) );
 
         exitBtn.setOnAction( actionEvent -> Platform.exit());
 
     }
 
+    /**
+     * Runs a query on the database to determine the userID of the currently selected contactRecords item based
+     * on the firstName and lastName
+     * @return integer of the selected item's userID
+     */
     private int getSelectedPK(){
 
         int selectedPK = 0;
@@ -80,6 +95,8 @@ public class RecordSelector {
             result.next();
             selectedPK = result.getInt("userID");
             debug("Selected item database PK: " + selectedPK );
+
+            conn.close();
 
         } catch( Exception ex ){ ex.printStackTrace(); }
 

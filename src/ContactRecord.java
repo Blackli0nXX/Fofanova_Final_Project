@@ -61,6 +61,8 @@ public class ContactRecord {
         stage.setScene(scene);
         stage.show();
 
+
+
         cancelBtn.setOnAction( actionEvent -> {
             stage.close();
         });
