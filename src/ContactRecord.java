@@ -50,7 +50,7 @@ public class ContactRecord {
         NEW
     }
 
-    ContactRecord( Option option, Contact newContact ){
+    ContactRecord( Option option, int primaryKey ){
 
         root.setPadding(new Insets(10));
         root.setAlignment(Pos.CENTER);
@@ -69,7 +69,7 @@ public class ContactRecord {
             if( option == Option.NEW ){
 
                 try {
-                    Connection conn = RecordSelector.openDB();
+                    Connection conn = ContactApp.openDB();
                     conn.createStatement().executeUpdate("INSERT INTO contacts (firstName, lastName, email, phoneNumber, address, birthday, notes) VALUES (\'" +
                             firstNameTxt.getText() + "\', \'" + lastNameTxt.getText() + "\', \'" + emailTxt.getText() + "\', \'" + phoneNumberTxt.getText() + "\', \'" +
                             addressTxt.getText() + "\', \'" + birthdayTxt.getText() + "\', \'" + notesTxt.getText() + "\');" );

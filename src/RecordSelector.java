@@ -23,11 +23,13 @@ public class RecordSelector {
 
     RecordSelector(){
 
+        disableButtons( true );
+
         selectActionPane.setCollapsible( false );
         contactRecordsPane.setCollapsible( false );
 
         try{
-            Connection conn = openDB();
+            Connection conn = ContactApp.openDB();
 
             ObservableList<String> currentEntries = FXCollections.observableArrayList();
             ResultSet result = conn.createStatement().executeQuery( "SELECT * FROM contacts" );
@@ -39,31 +41,67 @@ public class RecordSelector {
             contactRecords.setItems( currentEntries );
 
             conn.close();
-        }
-        catch( Exception ex ){ ex.printStackTrace(); }
 
-        newBtn.setOnAction( actionEvent -> {
-            new ContactRecord( ContactRecord.Option.NEW, new Contact() );
+        } catch( Exception ex ){ ex.printStackTrace(); }
+
+        contactRecords.setOnMouseClicked( actionEvent -> {
+            if( contactRecords.getSelectionModel().isEmpty() == false ){
+                disableButtons( false );
+            }
         });
 
-        exitBtn.setOnAction( actionEvent -> {
-            Platform.exit();
+        editBtn.setOnAction( actionEvent -> {
+            new ContactRecord( ContactRecord.Option.WRITE, getSelectedPK() );
         });
+
+        newBtn.setOnAction( actionEvent -> new ContactRecord( ContactRecord.Option.NEW, 0 ));
+
+        exitBtn.setOnAction( actionEvent -> Platform.exit());
 
     }
 
-    public static Connection openDB(){
+    private int getSelectedPK(){
 
-        Connection conn = null;
+        int selectedPK = 0;
 
-        try{
-            Class.forName("com.mysql.jdbc.Driver").newInstance();
-            conn = DriverManager.getConnection("jdbc:mysql://tstouchet17f.heyuhnem.com:3306/tstouche_contacts", "tstouche_contact", "OhMF?cJO!@}1");
-        }
-        catch( Exception ex ){ ex.printStackTrace(); }
+        try {
+            String selectedItem = contactRecords.getSelectionModel().getSelectedItem().toString();
+            int substringIndex = selectedItem.indexOf(' ');
 
-        return conn;
+            Connection conn = ContactApp.openDB();
+
+            String query = "SELECT userID FROM contacts WHERE firstName=\'" +
+                    selectedItem.substring(0, substringIndex) + "\' AND lastName=\'" +
+                    selectedItem.substring( substringIndex + 1 ) + "\';";
+            debug( query );
+
+            ResultSet result = conn.createStatement().executeQuery( query );
+
+            result.next();
+            selectedPK = result.getInt("userID");
+            debug("Selected item database PK: " + selectedPK );
+
+        } catch( Exception ex ){ ex.printStackTrace(); }
+
+        return selectedPK;
+    }
+
+    /**
+     * Disables or enables the buttons that should not be enabled when there is no item selected in the contactRecords
+     * list
+     * @param option true to disable, false to enable
+     */
+    private void disableButtons( boolean option ){
+        viewBtn.setDisable( option );
+        deleteBtn.setDisable( option );
+        editBtn.setDisable( option );
     }
 
     public VBox getRoot(){ return root; }
+
+    /**
+     * shortcut for System.out.println()
+     * @param message String that will be printed to console
+     */
+    private void debug( String message ){ System.out.println( message ); }
 }
