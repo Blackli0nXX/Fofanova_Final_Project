@@ -13,19 +13,18 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
 
-public class RecordSelector {
+class RecordSelector {
 
     private ListView contactRecords = new ListView();
     private TitledPane contactRecordsPane = new TitledPane("Select a Name", contactRecords);
 
     private Button newBtn = new Button("New");
-    private Button viewBtn = new Button("View");
     private Button deleteBtn = new Button("Delete");
     private Button editBtn = new Button("Edit");
     private Button importBtn = new Button("Import");
     private Button exportBtn = new Button("Export");
     private Button exitBtn = new Button("Exit");
-    private HBox selectAction = new HBox( newBtn, viewBtn, deleteBtn, editBtn, importBtn, exportBtn, exitBtn );
+    private HBox selectAction = new HBox( newBtn, deleteBtn, editBtn, importBtn, exportBtn, exitBtn );
     private TitledPane selectActionPane = new TitledPane("Select an Action", selectAction);
 
     private Label viewOutputLbl = new Label("");
@@ -41,8 +40,21 @@ public class RecordSelector {
 
         disableButtons( true );
         contactRecords.setOnMouseClicked( actionEvent -> {
-            if( !contactRecords.getSelectionModel().isEmpty() ){
-                disableButtons( false );
+            if( !contactRecords.getSelectionModel().isEmpty() ) {
+                disableButtons(false);
+
+                try {
+                    ResultSet result = ContactApp.openDB().createStatement().
+                            executeQuery("SELECT * FROM contacts WHERE userID=\'" + getSelectedPK() + "\';");
+                    result.next();
+
+                    viewOutputLbl.setText("Name:\t\t\t" + result.getString("firstName") + " " +
+                            result.getString("lastName") + "\nEmail:\t\t\t" + result.getString("email") +
+                            "\nPhone Number:\t" + result.getString("phoneNumber") + "\nAddress:\t\t\t" +
+                            result.getString("address") + "\nBirthday:\t\t\t" + result.getString("birthday") +
+                            "\nNotes:\t\t\t" + result.getString("notes"));
+
+                } catch (Exception ex) { ex.printStackTrace(); }
             }
         });
 
@@ -114,21 +126,6 @@ public class RecordSelector {
 
         newBtn.setOnAction( actionEvent -> new ContactRecord( ContactRecord.Option.NEW, 0, this ));
 
-        viewBtn.setOnAction( actionEvent ->  {
-            try {
-                ResultSet result = ContactApp.openDB().createStatement().
-                        executeQuery("SELECT * FROM contacts WHERE userID=\'" + getSelectedPK() + "\';");
-                result.next();
-
-                viewOutputLbl.setText("Name: " + result.getString("firstName") + " " +
-                        result.getString("lastName") + "\nEmail: " + result.getString("email") +
-                        "\nPhone Number: " + result.getString("phoneNumber") + "\nAddress: " +
-                        result.getString("address") + "\nBirthday: " + result.getString("birthday") +
-                        "\nNotes: " + result.getString("notes"));
-
-            } catch( Exception ex ){ ex.printStackTrace(); }
-        });
-
         deleteBtn.setOnAction( actionEvent -> {
             try{
                 Connection conn = ContactApp.openDB();
@@ -199,7 +196,6 @@ public class RecordSelector {
      */
     private void setButtonIcons(){
         newBtn.setGraphic( new ImageView( new Image( getClass().getResourceAsStream("png/new.png"))));
-        viewBtn.setGraphic( new ImageView( new Image( getClass().getResourceAsStream("png/view.png"))));
         deleteBtn.setGraphic( new ImageView( new Image( getClass().getResourceAsStream("png/delete.png"))));
         editBtn.setGraphic( new ImageView( new Image( getClass().getResourceAsStream("png/edit.png"))));
         importBtn.setGraphic( new ImageView( new Image( getClass().getResourceAsStream("png/import.png"))));
@@ -212,7 +208,6 @@ public class RecordSelector {
      */
     private void setButtonTooltips(){
         newBtn.setTooltip( new Tooltip("Opens a form to add a new contact"));
-        viewBtn.setTooltip( new Tooltip("Prints the contents of the selected contact"));
         deleteBtn.setTooltip( new Tooltip("Deletes selected contact from the database"));
         editBtn.setTooltip( new Tooltip("Opens a form to edit the contents of the selected contact"));
         importBtn.setTooltip( new Tooltip("Opens a window to select a CSV file to import into the database"));
@@ -226,7 +221,6 @@ public class RecordSelector {
      * @param option true to disable, false to enable
      */
     private void disableButtons( boolean option ){
-        viewBtn.setDisable( option );
         deleteBtn.setDisable( option );
         editBtn.setDisable( option );
     }
