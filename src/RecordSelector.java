@@ -4,7 +4,10 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.*;
 import java.io.File;
+import java.io.PrintWriter;
 import java.sql.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
 
 public class RecordSelector {
@@ -81,6 +84,7 @@ public class RecordSelector {
 
         newBtn.setOnAction( actionEvent -> new ContactRecord( ContactRecord.Option.NEW, 0, this ));
 
+        /* TODO Change function to show contact record in same screen */
         viewBtn.setOnAction( actionEvent ->  new ContactRecord( ContactRecord.Option.READ, getSelectedPK(), this ) );
 
         deleteBtn.setOnAction( actionEvent -> {
@@ -117,6 +121,32 @@ public class RecordSelector {
             } catch( Exception ex ){ ex.printStackTrace(); }
 
             updateContactRecords();
+        });
+
+        exportBtn.setOnAction( actionEvent -> {
+           try{
+               DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
+               LocalDateTime now = LocalDateTime.now();
+
+               FileChooser fileChooser = new FileChooser();
+               fileChooser.setInitialFileName("contacts-" + dtf.format(now) );
+               fileChooser.setTitle("CSV Exporter");
+               File csvFile = fileChooser.showSaveDialog( new Stage() );
+               PrintWriter csvWriter = new PrintWriter( csvFile );
+
+               String query = "SELECT * FROM contacts ORDER BY lastName";
+               ResultSet result = ContactApp.openDB().createStatement().executeQuery( query );
+
+               while( result.next() ){
+                   csvWriter.print( result.getString("firstName") + ", " + result.getString("lastName") + ", " +
+                           result.getString("email") + ", " + result.getString("phoneNumber") + ", " +
+                           result.getString("address") + ", " + result.getString("birthday") + ", " +
+                           result.getString("notes") + "\n" );
+               }
+
+               csvWriter.close();
+
+           } catch( Exception ex ){ ex.printStackTrace(); }
         });
 
         exitBtn.setOnAction( actionEvent -> Platform.exit());
