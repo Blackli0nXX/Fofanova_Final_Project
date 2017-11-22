@@ -39,6 +39,17 @@ class RecordSelector {
         contactRecordsPane.setCollapsible( false );
 
         disableButtons( true );
+
+        setContactRecordsAction();
+
+        updateContactRecords();
+
+        setButtonActions();
+        setButtonIcons();
+        setButtonTooltips();
+    }
+
+    private void setContactRecordsAction(){
         contactRecords.setOnMouseClicked( actionEvent -> {
             if( !contactRecords.getSelectionModel().isEmpty() ) {
                 disableButtons(false);
@@ -57,12 +68,6 @@ class RecordSelector {
                 } catch (Exception ex) { ex.printStackTrace(); }
             }
         });
-
-        updateContactRecords();
-
-        setButtonActions();
-        setButtonIcons();
-        setButtonTooltips();
     }
 
     /**

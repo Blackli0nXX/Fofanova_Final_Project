@@ -76,7 +76,7 @@ public class ContactRecord {
                 firstNameTxt.setText( result.getString("firstName") );
                 lastNameTxt.setText( result.getString("lastName") );
                 emailTxt.setText( result.getString("email") );
-                phoneNumberTxt.setText( result.getString("email") );
+                phoneNumberTxt.setText( result.getString("phoneNumber") );
                 addressTxt.setText( result.getString("address") );
                 birthdayTxt.setText( result.getString("birthday") );
                 notesTxt.setText( result.getString("notes") );
