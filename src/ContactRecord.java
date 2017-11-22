@@ -88,6 +88,23 @@ public class ContactRecord {
         cancelBtn.setOnAction( actionEvent -> stage.close() );
 
         saveBtn.setOnAction( actionEvent -> {
+            if( option == Option.READ ){ stage.close(); }
+            if( option == Option.WRITE ){
+                try {
+                    Connection conn = ContactApp.openDB();
+
+                    String query = "UPDATE contacts SET firstName=\'" + firstNameTxt.getText() + "\', lastName=\'" +
+                            lastNameTxt.getText() + "\', email=\'" + emailTxt.getText() + "\', phoneNumber=\'" +
+                            phoneNumberTxt.getText() + "\', address=\'" + addressTxt.getText() + "\', birthday=\'" +
+                            birthdayTxt.getText() + "\', notes=\'" + notesTxt.getText() + "\' WHERE userID=" +
+                            primaryKey;
+
+                    conn.createStatement().executeUpdate( query );
+
+                    conn.close();
+
+                } catch( Exception ex ){ ex.printStackTrace(); }
+            }
             if( option == Option.NEW ){
 
                 try {
@@ -101,7 +118,6 @@ public class ContactRecord {
                     stage.close();
                 }
                 catch( Exception ex ){ ex.printStackTrace(); }
-
             }
         });
     }
