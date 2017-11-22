@@ -1,4 +1,3 @@
-import javafx.application.Platform;
 import javafx.geometry.*;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -6,6 +5,7 @@ import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 
 public class ContactRecord {
 
@@ -61,11 +61,31 @@ public class ContactRecord {
         stage.setScene(scene);
         stage.show();
 
+        if( option == Option.READ || option == Option.WRITE ){
 
+            if( option == Option.READ){ disableFields( true ); }
 
-        cancelBtn.setOnAction( actionEvent -> {
-            stage.close();
-        });
+            try{
+
+                Connection conn = ContactApp.openDB();
+
+                String query = "SELECT * FROM contacts WHERE userID=\'" + primaryKey + "\';";
+
+                ResultSet result = conn.createStatement().executeQuery( query );
+                result.next();
+
+                firstNameTxt.setText( result.getString("firstName") );
+                lastNameTxt.setText( result.getString("lastName") );
+                emailTxt.setText( result.getString("email") );
+                phoneNumberTxt.setText( result.getString("email") );
+                addressTxt.setText( result.getString("address") );
+                birthdayTxt.setText( result.getString("birthday") );
+                notesTxt.setText( result.getString("notes") );
+
+            } catch( Exception ex ){ ex.printStackTrace(); }
+        }
+
+        cancelBtn.setOnAction( actionEvent -> stage.close() );
 
         saveBtn.setOnAction( actionEvent -> {
             if( option == Option.NEW ){
@@ -84,5 +104,19 @@ public class ContactRecord {
 
             }
         });
+    }
+
+    /**
+     * Set's all TextFields to be writable or only readable based on option parameter
+     * @param option true disables, false enables
+     */
+    private void disableFields( boolean option ){
+        firstNameTxt.setDisable( option );
+        lastNameTxt.setDisable( option );
+        emailTxt.setDisable( option );
+        phoneNumberTxt.setDisable( option );
+        addressTxt.setDisable( option );
+        birthdayTxt.setDisable( option );
+        notesTxt.setDisable( option );
     }
 }

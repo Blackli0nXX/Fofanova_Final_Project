@@ -59,7 +59,7 @@ public class RecordSelector {
                 Connection conn = ContactApp.openDB();
                 conn.createStatement().executeUpdate( "DELETE FROM contacts WHERE userID=\'" + getSelectedPK() + "\';" );
                 conn.close();
-                
+
             } catch( Exception ex ){ ex.printStackTrace(); }
 
         });
