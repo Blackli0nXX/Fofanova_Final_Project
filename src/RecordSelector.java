@@ -27,7 +27,9 @@ public class RecordSelector {
     private HBox selectAction = new HBox( newBtn, viewBtn, deleteBtn, editBtn, importBtn, exportBtn, exitBtn );
     private TitledPane selectActionPane = new TitledPane("Select an Action", selectAction);
 
-    VBox root = new VBox( contactRecordsPane, selectActionPane );
+    private Label viewOutputLbl = new Label("");
+
+    VBox root = new VBox( contactRecordsPane, selectActionPane, viewOutputLbl );
 
     RecordSelector(){
 
@@ -108,8 +110,20 @@ public class RecordSelector {
 
         newBtn.setOnAction( actionEvent -> new ContactRecord( ContactRecord.Option.NEW, 0, this ));
 
-        /* TODO Change function to show contact record in same screen */
-        viewBtn.setOnAction( actionEvent ->  new ContactRecord( ContactRecord.Option.READ, getSelectedPK(), this ) );
+        viewBtn.setOnAction( actionEvent ->  {
+            try {
+                ResultSet result = ContactApp.openDB().createStatement().
+                        executeQuery("SELECT * FROM contacts WHERE userID=\'" + getSelectedPK() + "\';");
+                result.next();
+
+                viewOutputLbl.setText("Name: " + result.getString("firstName") + " " +
+                        result.getString("lastName") + "\nEmail: " + result.getString("email") +
+                        "\nPhone Number: " + result.getString("phoneNumber") + "\nAddress: " +
+                        result.getString("address") + "\nBirthday: " + result.getString("birthday") +
+                        "\nNotes: " + result.getString("notes"));
+
+            } catch( Exception ex ){ ex.printStackTrace(); }
+        });
 
         deleteBtn.setOnAction( actionEvent -> {
             try{
