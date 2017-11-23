@@ -6,7 +6,7 @@ import javafx.stage.Stage;
 import java.sql.Connection;
 import java.sql.ResultSet;
 
-public class ContactRecord {
+class ContactRecord {
 
     private Label firstNameLbl = new Label("First Name");
     private TextField firstNameTxt = new TextField();

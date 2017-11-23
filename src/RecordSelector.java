@@ -1,64 +1,96 @@
+/**
+ * CIS2337 Final Project
+ * RecordSelector
+ * Purpose: Form in which user can view, delete, import, and export contacts; Also has buttons to open new forms
+ * to add new contacts or edit existing contacts
+ *
+ * @author Trevor Touchet, Dmitriy Karpunov
+ * @version 1.0 22 November, 2017
+ */
+
 import javafx.application.Platform;
 import javafx.collections.*;
-import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.stage.*;
-import java.io.File;
-import java.io.PrintWriter;
+import javafx.util.Pair;
+
+import java.io.*;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.Scanner;
 
+/**
+ * Contains the elements required to make a functioning contact selection interface
+ */
 class RecordSelector {
 
-    private ListView contactRecords = new ListView();
-    private TitledPane contactRecordsPane = new TitledPane("Select a Name", contactRecords);
+    private ListView contactRecords = new ListView(); // ListView that will hold contact names
+    private TitledPane contactRecordsPane = new TitledPane("Select a Name", contactRecords); // Pane to hold the contactRecords ListView
 
-    private Button newBtn = new Button("New");
-    private Button deleteBtn = new Button("Delete");
-    private Button editBtn = new Button("Edit");
-    private Button importBtn = new Button("Import");
-    private Button exportBtn = new Button("Export");
-    private Button exitBtn = new Button("Exit");
-    private HBox selectAction = new HBox( newBtn, deleteBtn, editBtn, importBtn, exportBtn, exitBtn );
-    private TitledPane selectActionPane = new TitledPane("Select an Action", selectAction);
+    private Button newBtn = new Button("New"); // Button that will create new contact
+    private Button deleteBtn = new Button("Delete"); // Button that will delete selected contact
+    private Button editBtn = new Button("Edit"); // Button that will edit selected contact
+    private Button importBtn = new Button("Import"); // Button that will import contacts from CSV file
+    private Button exportBtn = new Button("Export"); // Button that will export contacts to CSV file
+    private Button exitBtn = new Button("Exit"); // Button that will exit the application
+    private HBox selectActionBox = new HBox( newBtn, deleteBtn, editBtn, importBtn, exportBtn, exitBtn ); // HBox that will hold all buttons
+    private TitledPane selectActionPane = new TitledPane( "Select an Action", selectActionBox ); // TitledPane that will hold HBox with buttons
 
-    private Label viewOutputLbl = new Label("");
+    private Label viewOutputLbl = new Label(""); // Label that will display selected contact details
 
-    VBox root = new VBox( contactRecordsPane, selectActionPane, viewOutputLbl );
+    VBox root = new VBox( contactRecordsPane, selectActionPane, viewOutputLbl ); // VBox that will hold top level GUI components
 
+    /**
+     * Constructor that will be run when the application starts
+     * Performs startup functions
+     */
     RecordSelector(){
 
-        root.setAlignment( Pos.CENTER );
-
+        // Set the TitledPanes to not be collapsible
         selectActionPane.setCollapsible( false );
         contactRecordsPane.setCollapsible( false );
 
+        // Initially disable edit and delete buttons
         disableButtons( true );
 
+        // Set contactRecords to show contact information when contact is selected as well as enable buttons
         setContactRecordsAction();
 
+        // Populate the contactRecords ListView with contacts from the database
         updateContactRecords();
 
+        // Set the logic for each button
         setButtonActions();
+        // Set the icon for each button
         setButtonIcons();
+        // Set the tooltips for each button
         setButtonTooltips();
     }
 
+    /**
+     * Sets the contactRecords ListView to enable buttons when a contact is selected and show selected contact's information
+     */
     private void setContactRecordsAction(){
+        // Set logic when an item in contactRecords is selected
         contactRecords.setOnMouseClicked( actionEvent -> {
+            // Execute if a contact is selected
             if( !contactRecords.getSelectionModel().isEmpty() ) {
+                // Enable the delete and edit buttons
                 disableButtons(false);
 
                 try {
+                    // Open a connection to the database and query all columns about the selected user
                     ResultSet result = ContactApp.openDB().createStatement().
                             executeQuery("SELECT * FROM contacts WHERE userID=\'" + getSelectedPK() + "\';");
+                    // Move the cursor to the first field
                     result.next();
 
+                    // Set the viewOutputLbl to show all columns about the selected user
                     viewOutputLbl.setText("Name:\t\t\t" + result.getString("firstName") + " " +
                             result.getString("lastName") + "\nEmail:\t\t\t" + result.getString("email") +
                             "\nPhone Number:\t" + result.getString("phoneNumber") + "\nAddress:\t\t\t" +
@@ -67,6 +99,8 @@ class RecordSelector {
 
                 } catch (Exception ex) { ex.printStackTrace(); }
             }
+            // disable edit and delete buttons if an item isn't selected
+            else disableButtons( true );
         });
     }
 
@@ -75,52 +109,40 @@ class RecordSelector {
      */
     public void updateContactRecords(){
         try{
-            Connection conn = ContactApp.openDB();
-
+            // Create an ObservableList to hold the entries from the database
             ObservableList<String> currentEntries = FXCollections.observableArrayList();
-            ResultSet result = conn.createStatement().executeQuery( "SELECT * FROM contacts" );
 
+            // Query the database for all contacts
+            ResultSet result = ContactApp.openDB().createStatement().executeQuery( "SELECT * FROM contacts" );
+
+            // Iterate through each entry
             while( result.next() ){
-                currentEntries.add( String.valueOf( result.getString("firstName") + " " + result.getString("lastName") ) );
+                // Add the PK, first name, and last name as an entry to the ObservableList
+                currentEntries.add( String.valueOf( result.getString("userID") + " " +
+                        result.getString("firstName") + " " + result.getString("lastName") ) );
             }
-
+            // Set the contactRecords ListView to have all contacts from the database
             contactRecords.setItems( currentEntries );
-
-            conn.close();
 
         } catch( Exception ex ){ ex.printStackTrace(); }
     }
 
     /**
-     * Runs a query on the database to determine the userID of the currently selected contactRecords item based
-     * on the firstName and lastName
+     * Converts the ID of the selected contact to an integer, which will be the primary key in the database
      * @return integer of the selected item's userID
      */
     private int getSelectedPK(){
 
-        int selectedPK = 0;
+        // Convert the selected entry to a String
+        String selectedItem = contactRecords.getSelectionModel().getSelectedItem().toString();
 
-        try {
-            String selectedItem = contactRecords.getSelectionModel().getSelectedItem().toString();
-            int substringIndex = selectedItem.indexOf(' ');
+        // Get the index of the first space in the selected entry
+        int substringIndex = selectedItem.indexOf(' ');
 
-            Connection conn = ContactApp.openDB();
+        // Convert the ID of the selected entry to an Integer
+        int selectedPK = Integer.valueOf(selectedItem.substring(0, substringIndex));
 
-            String query = "SELECT userID FROM contacts WHERE firstName=\'" +
-                    selectedItem.substring(0, substringIndex) + "\' AND lastName=\'" +
-                    selectedItem.substring( substringIndex + 1 ) + "\';";
-            debug( query );
-
-            ResultSet result = conn.createStatement().executeQuery( query );
-
-            result.next();
-            selectedPK = result.getInt("userID");
-            debug("Selected item database PK: " + selectedPK );
-
-            conn.close();
-
-        } catch( Exception ex ){ ex.printStackTrace(); }
-
+        // return the selectedPK integer
         return selectedPK;
     }
 
