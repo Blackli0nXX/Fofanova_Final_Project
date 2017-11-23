@@ -1,5 +1,5 @@
 /**
- * CIS2337 Final Project
+ * CIS2348 Final Project
  * ContactApp.java
  * Purpose: Entry point for the Contact Manager Application
  *

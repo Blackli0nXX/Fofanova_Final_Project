@@ -1,6 +1,6 @@
 /**
- * CIS2337 Final Project
- * RecordSelector
+ * CIS2348 Final Project
+ * RecordSelector.java
  * Purpose: Form in which user can view, delete, import, and export contacts; Also has buttons to open new forms
  * to add new contacts or edit existing contacts
  *
@@ -21,9 +21,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
 
-/**
- * Contains the elements required to make a functioning contact selection interface
- */
 class RecordSelector {
 
     private ListView contactRecords = new ListView(); // ListView that will hold contact names
@@ -82,7 +79,8 @@ class RecordSelector {
 
                 try {
                     // Open a connection to the database and query all columns about the selected user
-                    ResultSet result = ContactApp.openDB().createStatement().
+                    Connection conn = ContactApp.openDB();
+                    ResultSet result = conn.createStatement().
                             executeQuery("SELECT * FROM contacts WHERE userID=\'" + getSelectedPK() + "\';");
                     // Move the cursor to the first field
                     result.next();
@@ -93,6 +91,8 @@ class RecordSelector {
                             "\nPhone Number:\t" + result.getString("phoneNumber") + "\nAddress:\t\t\t" +
                             result.getString("address") + "\nBirthday:\t\t\t" + result.getString("birthday") +
                             "\nNotes:\t\t\t" + result.getString("notes"));
+
+                    conn.close();
 
                 } catch (Exception ex) { ex.printStackTrace(); }
             }
@@ -110,7 +110,8 @@ class RecordSelector {
             ObservableList<String> currentEntries = FXCollections.observableArrayList();
 
             // Query the database for all contacts
-            ResultSet result = ContactApp.openDB().createStatement().executeQuery( "SELECT * FROM contacts" );
+            Connection conn = ContactApp.openDB();
+            ResultSet result = conn.createStatement().executeQuery( "SELECT * FROM contacts" );
 
             // Iterate through each entry
             while( result.next() ){
@@ -120,6 +121,8 @@ class RecordSelector {
             }
             // Set the contactRecords ListView to have all contacts from the database
             contactRecords.setItems( currentEntries );
+
+            conn.close();
 
         } catch( Exception ex ){ ex.printStackTrace(); }
     }
@@ -155,9 +158,14 @@ class RecordSelector {
         deleteBtn.setOnAction( actionEvent -> {
             try{
                 // Open connection to database and execute DELETE statement
-                ContactApp.openDB().createStatement().executeUpdate( "DELETE FROM contacts WHERE userID=\'" + getSelectedPK() + "\';" );
+                Connection conn = ContactApp.openDB();
+                conn.createStatement().executeUpdate( "DELETE FROM contacts WHERE userID=\'" + getSelectedPK() + "\';" );
+                conn.close();
 
             } catch( Exception ex ){ ex.printStackTrace(); }
+
+            // Disable the edit and delete buttons since no entry is selected
+            disableButtons( true );
 
             // Update the contactRecords ListView
             updateContactRecords();
@@ -187,7 +195,9 @@ class RecordSelector {
                             csvScanner.next() + "\', \'" + csvScanner.next() + "\', \'" + csvScanner.next() + "\', \'" + csvScanner.next() + "\', \'" +
                             csvScanner.next() + "\', \'" + csvScanner.next() + "\', \'" + csvScanner.next() + "\');";
                     // Open a connection to the database and execute the query
-                    ContactApp.openDB().createStatement().executeUpdate( query );
+                    Connection conn = ContactApp.openDB();
+                    conn.createStatement().executeUpdate( query );
+                    conn.close();
                 }
             } catch( Exception ex ){ ex.printStackTrace(); }
 
@@ -217,7 +227,8 @@ class RecordSelector {
                // Create a String query selecting all records from the database sorted alphabetically by last name
                String query = "SELECT * FROM contacts ORDER BY lastName";
                // Open a connection with the database, execute the query, and store the results in a ResultSet object
-               ResultSet result = ContactApp.openDB().createStatement().executeQuery( query );
+               Connection conn = ContactApp.openDB();
+               ResultSet result = conn.createStatement().executeQuery( query );
 
                // Iterate through each record
                while( result.next() ){
@@ -230,6 +241,8 @@ class RecordSelector {
 
                // Close the PrintWriter object
                csvWriter.close();
+
+               conn.close();
 
            } catch( Exception ex ){ ex.printStackTrace(); }
         });

@@ -1,3 +1,13 @@
+/**
+ * CIS2348 Final Project
+ * RecordSelector
+ * Purpose: Form which will allow user to edit an existing contact or create a new one and save the changes
+ * to the online database
+ *
+ * @author Trevor Touchet, Dmitriy Karpunov
+ * @version 1.0 22 November, 2017
+ */
+
 import javafx.geometry.*;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -80,6 +90,8 @@ class ContactRecord {
                 addressTxt.setText( result.getString("address") );
                 birthdayTxt.setText( result.getString("birthday") );
                 notesTxt.setText( result.getString("notes") );
+
+                conn.close();
 
             } catch( Exception ex ){ ex.printStackTrace(); }
         }
