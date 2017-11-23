@@ -15,13 +15,10 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.stage.*;
-import javafx.util.Pair;
-
 import java.io.*;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Map;
 import java.util.Scanner;
 
 /**
@@ -151,70 +148,93 @@ class RecordSelector {
      */
     private void setButtonActions(){
 
+        // Sets the newBtn Button to open a new ContactRecord object
         newBtn.setOnAction( actionEvent -> new ContactRecord( ContactRecord.Option.NEW, 0, this ));
 
+        // Sets deleteBtn Button to delete selected entry from database
         deleteBtn.setOnAction( actionEvent -> {
             try{
-                Connection conn = ContactApp.openDB();
-                conn.createStatement().executeUpdate( "DELETE FROM contacts WHERE userID=\'" + getSelectedPK() + "\';" );
-                conn.close();
+                // Open connection to database and execute DELETE statement
+                ContactApp.openDB().createStatement().executeUpdate( "DELETE FROM contacts WHERE userID=\'" + getSelectedPK() + "\';" );
 
             } catch( Exception ex ){ ex.printStackTrace(); }
 
+            // Update the contactRecords ListView
             updateContactRecords();
         });
 
+        // Set editBtn Button to open a a ContactRecord object and populate the fields with the selected record fields
         editBtn.setOnAction( actionEvent -> new ContactRecord( ContactRecord.Option.WRITE, getSelectedPK(), this ) );
 
+        // Set the importBtn Button to open a file selector and import the selected file into the database
         importBtn.setOnAction( actionEvent -> {
             try {
+                // Create a FileChoose object and set the title
                 FileChooser fileChooser = new FileChooser();
                 fileChooser.setTitle("CSV Selector");
+                // Create a File object and set it to the file the user selects
                 File csvFile = fileChooser.showOpenDialog(new Stage());
 
+                // Create a Scanner object with the previously created file
                 Scanner csvScanner = new Scanner( csvFile );
+                // Set the scanner to use the delimiters of commas and newline characters
                 csvScanner.useDelimiter("(,|\n)");
 
                 while( csvScanner.hasNext() ){
-                    Connection conn = ContactApp.openDB();
+
+                    // Create a String with an INSERT query inputting a line from the selected CSV file
                     String query = "INSERT INTO contacts (firstName, lastName, email, phoneNumber, address, birthday, notes) VALUES (\'" +
                             csvScanner.next() + "\', \'" + csvScanner.next() + "\', \'" + csvScanner.next() + "\', \'" + csvScanner.next() + "\', \'" +
                             csvScanner.next() + "\', \'" + csvScanner.next() + "\', \'" + csvScanner.next() + "\');";
-                    debug( query );
-                    conn.createStatement().executeUpdate( query );
-                    conn.close();
+                    // Open a connection to the database and execute the query
+                    ContactApp.openDB().createStatement().executeUpdate( query );
                 }
             } catch( Exception ex ){ ex.printStackTrace(); }
 
+            // Update the contactRecords ListView
             updateContactRecords();
         });
 
+        // Set the exportBtn Button to open a FileChooser and export the database contents to the chosen file
         exportBtn.setOnAction( actionEvent -> {
            try{
+               // Create a DateTimeFormatter object with a pattern to append to the default output file
                DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
+               // Create a LocalDateTime object with the current time and date
                LocalDateTime now = LocalDateTime.now();
 
+               // Create a new FileChooser object
                FileChooser fileChooser = new FileChooser();
+               // Set the default output file to a unique name based on the current time and date
                fileChooser.setInitialFileName("contacts-" + dtf.format(now) );
+               // Set the title of the FileChooser
                fileChooser.setTitle("CSV Exporter");
+               // Create a File object pointing to the chosen output file
                File csvFile = fileChooser.showSaveDialog( new Stage() );
+               // Create a PrintWriter object that will print to the File object
                PrintWriter csvWriter = new PrintWriter( csvFile );
 
+               // Create a String query selecting all records from the database sorted alphabetically by last name
                String query = "SELECT * FROM contacts ORDER BY lastName";
+               // Open a connection with the database, execute the query, and store the results in a ResultSet object
                ResultSet result = ContactApp.openDB().createStatement().executeQuery( query );
 
+               // Iterate through each record
                while( result.next() ){
+                   // Print each line of data to the chosen file separated by commas and ending with a newline character
                    csvWriter.print( result.getString("firstName") + ", " + result.getString("lastName") + ", " +
                            result.getString("email") + ", " + result.getString("phoneNumber") + ", " +
                            result.getString("address") + ", " + result.getString("birthday") + ", " +
                            result.getString("notes") + "\n" );
                }
 
+               // Close the PrintWriter object
                csvWriter.close();
 
            } catch( Exception ex ){ ex.printStackTrace(); }
         });
 
+        // Set the exitBtn Button to exit the application
         exitBtn.setOnAction( actionEvent -> Platform.exit());
     }
 
