@@ -59,7 +59,7 @@ class RecordSelector {
         updateContactRecords();
 
         // Set the logic for each button
-        setButtonActions();
+        setButtonLogic();
         // Set the icon for each button
         setButtonIcons();
         // Set the tooltips for each button
@@ -149,7 +149,7 @@ class RecordSelector {
     /**
      * This function initializes the logic for all of the buttons
      */
-    private void setButtonActions(){
+    private void setButtonLogic(){
 
         // Sets the newBtn Button to open a new ContactRecord object
         newBtn.setOnAction( actionEvent -> new ContactRecord( ContactRecord.Option.NEW, 0, this ));
@@ -216,7 +216,7 @@ class RecordSelector {
                // Create a new FileChooser object
                FileChooser fileChooser = new FileChooser();
                // Set the default output file to a unique name based on the current time and date
-               fileChooser.setInitialFileName("contacts-" + dtf.format(now) );
+               fileChooser.setInitialFileName("contacts-" + dtf.format(now) + ".csv" );
                // Set the title of the FileChooser
                fileChooser.setTitle("CSV Exporter");
                // Create a File object pointing to the chosen output file
